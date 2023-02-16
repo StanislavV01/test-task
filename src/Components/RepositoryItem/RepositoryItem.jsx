@@ -2,6 +2,9 @@ import styles from './item.module.css'
 import img from '../../assets/images/CourseImage.svg'
 import star from '../../assets/images/Vector.svg'
 import person from '../../assets/images/Level Icon.svg'
+
+
+
 function RepositoryItem({data}) {
   return (
   
@@ -11,7 +14,7 @@ function RepositoryItem({data}) {
         { data.owner.avatar_url ? <img src={data.owner.avatar_url} alt="owner" /> : <img src={img} alt="owner" />}
     </div>
     <div className={styles.about}>
-        <a href={data.owner.url}><h3>{data.name}</h3> </a>
+        <a href={data.owner.html_url}><h3>{data.name}</h3> </a>
         <div>
             <p>{data.owner.login}</p>
             <p>{data.language}</p>

@@ -1,8 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import repositoriesReducer from './Slice/RepositorySlice'
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    repositories: repositoriesReducer
   },
-});
+  devTools: process.env.NODE_ENV !== 'production',
+})
+
+export default store;

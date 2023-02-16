@@ -1,57 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import Input from './Components/Input/Input'
+import RepositoryList from './Components/RepositoryList/RepositoryList';
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
+import { repositoriesLoading, repositoriesReceived, repositoriesRequestFailed } from './app/Slice/RepositorySlice';
 import './App.css';
+import Pagination from './Components/Pagination/Pagination';
 
 function App() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const { list, status, error } = useSelector(state => state.repositories);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchRepositories = async () => {
+      try {
+        dispatch(repositoriesLoading());
+        const response = await axios.get(`https://api.github.com/search/repositories?q=${searchTerm?searchTerm:'react'}&per_page=3&page=${page}`);
+        dispatch(repositoriesReceived(response.data.items));
+        setTotalPages(Math.ceil(response.data.total_count / 3));
+      } catch (error) {
+        dispatch(repositoriesRequestFailed(error.message));
+      }
+    };
+
+    fetchRepositories();
+  }, [searchTerm, page, dispatch]);
+
+  const handleSearchTermChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(1);
+  };
+
+  const handlePrevPageClick = () => {
+    setPage(page => Math.max(page - 1, 1));
+  };
+
+  const handleNextPageClick = () => {
+    setPage(page => Math.min(page + 1, totalPages));
+  };
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+      <Input type="text" value={searchTerm} onChange={handleSearchTermChange} />
+      <RepositoryList list={list} status={status} error={error}></RepositoryList>
+
+    <Pagination totalPages={8} page={page} handleNextPageClick={handleNextPageClick} handlePrevPageClick={handlePrevPageClick} setPage={setPage}/>
     </div>
+   
+        
+
   );
 }
 

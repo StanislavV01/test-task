@@ -37,4 +37,8 @@
     .container {
         flex-wrap: wrap;
     }
+
+    .button {
+        margin: 5px 10px;
+    }
 }

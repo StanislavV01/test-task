@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Todo } from '../types/todo';
 
@@ -16,11 +15,35 @@ export function TodoCard({ todo, onDelete, onEdit }: TodoCardProps) {
   const [name, setName] = useState(todo.name);
   const [description, setDescription] = useState(todo.description);
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleCancel = useCallback(() => {
+    setName(todo.name);
+    setDescription(todo.description);
+    setIsEditing(false);
+  }, [todo.name, todo.description]);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     onEdit(todo._id, { name, description });
     setIsEditing(false);
-  };
+  }, [todo._id, name, description, onEdit]);
+
+
+  const ProgressBar = ({ progress }: { progress: number }) => (
+    <div className="mt-4">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <span className="text-sm text-gray-500 min-w-[45px]">
+          {progress}%
+        </span>
+      </div>
+    </div>
+  );
 
   if (isEditing) {
     return (
@@ -54,7 +77,7 @@ export function TodoCard({ todo, onDelete, onEdit }: TodoCardProps) {
             </button>
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={handleCancel}
               className="px-3 py-1 border rounded hover:bg-gray-50"
             >
               Cancel
@@ -95,20 +118,7 @@ export function TodoCard({ todo, onDelete, onEdit }: TodoCardProps) {
           </button>
         </div>
       </div>
-
-      <div className="mt-4">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${todo.progress}%` }}
-            />
-          </div>
-          <span className="text-sm text-gray-500 min-w-[45px]">
-            {todo.progress}%
-          </span>
-        </div>
-      </div>
+      <ProgressBar progress={todo.progress} />
     </div>
   );
 } 

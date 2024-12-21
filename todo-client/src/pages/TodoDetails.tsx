@@ -12,13 +12,15 @@ export function TodoDetails() {
 	const queryClient = useQueryClient();
 	const { updateTodo } = useTodoStore();
 
-	const { data: todo, isLoading } = useQuery({
+	const { data: todo, isLoading, error } = useQuery({
 		queryKey: ['todo', id],
 		queryFn: async () => {
 			if (!id) throw new Error('No todo ID provided');
 			return await todoApi.getTodo(id);
 		},
 		enabled: !!id,
+		retry: 1,
+		staleTime: 30000
 	});
 
 	const updateTodoMutation = useMutation({
@@ -34,7 +36,6 @@ export function TodoDetails() {
 			});
 		},
 		onSuccess: (updatedTodo: Todo) => {
-			console.log('Todo updated:', updatedTodo);
 			updateTodo(updatedTodo);
 			queryClient.setQueryData(['todo', id], updatedTodo);
 			queryClient.invalidateQueries({ queryKey: ['todos'] });
@@ -53,6 +54,14 @@ export function TodoDetails() {
 		}
 	};
 
+	if (error) {
+		return (
+			<div className="flex justify-center items-center h-screen text-red-500">
+				Error loading todo: {error instanceof Error ? error.message : 'Unknown error'}
+			</div>
+		);
+	}
+
 	if (isLoading || !todo) {
 		return <div className="flex justify-center items-center h-screen">Loading...</div>;
 	}
@@ -70,6 +79,7 @@ export function TodoDetails() {
 					}}
 					onSubmit={handleUpdate}
 					submitLabel="Update Todo"
+					loading={updateTodoMutation.isPending}
 				/>
 
 				<div className="flex justify-center mt-6">
